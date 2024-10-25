@@ -1,0 +1,16 @@
+[Unit]
+Description=NETCONF Server
+After=network.target
+
+[Service]
+Type=simple
+# Pre-execution command to create the directory and log file if they don't exist
+ExecStartPre=/bin/mkdir -p /var/log/yuma
+ExecStartPre=/bin/touch /var/log/yuma/netconfd.log
+
+ExecStart=/usr/sbin/netconfd --config=/etc/yuma/netconfd.conf
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target

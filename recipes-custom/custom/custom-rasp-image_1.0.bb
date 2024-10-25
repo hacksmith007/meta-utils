@@ -3,6 +3,7 @@ LICENSE = "MIT"
 
 # Inherit core-image-minimal recipe
 require recipes-core/images/core-image-minimal.bb
+inherit core-image
 
 IMAGE_INSTALL += " openssh \
     openssh-sftp-server \
@@ -13,5 +14,9 @@ IMAGE_INSTALL += " openssh \
     bash \
     coreutils \
     iproute2 \
-    shadow"
+    shadow \
+    docker-ce \
+    yuma123 \ 
+    wifi-connect "
 # Add additional packages
+SYSTEMD_SERVICE_${PN} += "docker.service"

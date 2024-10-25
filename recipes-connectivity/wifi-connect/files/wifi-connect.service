@@ -1,0 +1,10 @@
+[Unit]
+Description=Connect to WiFi on startup
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/wpa_supplicant -c/etc/wpa_supplicant/wpa_supplicant.conf -iwlan0
+
+[Install]
+WantedBy=multi-user.target
