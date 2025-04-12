@@ -4,36 +4,64 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
 SRC_URI_yuma ?= "github.com/hacksmith007/openyuma"
-SRC_URI_aether ?= "github.com/hacksmith007/AetherLink-yang"
-SRC_URI_yuma_local ?= "/home/rahul/yocto-project/rasp/openyuma"
-SRC_URI_aether_local ?= "/home/rahul/yocto-project/rasp/AetherLink-yang"
+SRC_URI_aether_fwd_yuma ?= "/home/rahul/yocto/yocto-sources/aether/forwardplane"
+SRC_URI_aether_yang ?= "/home/rahul/yocto/yocto-sources/aether/yang"
 
-PROTOCOL_aether ?= "file"
-PROTOCOL_yuma ?= "file"
+PROTOCOL_aether ?= "https"
+PROTOCOL_yuma ?= "https"
+PROTOCL_forwardplane ?= "https"
 
-BRANCH_aether = "main"
-BRANCH_yuma = "sil_init_aether_xcvr"
+# Prepare task: Copies from local folder to ${WORKDIR}
+python do_prepare() {
+    import shutil
+    import os
+    src_uri_fwd_yuma = d.getVar("SRC_URI_aether_fwd_yuma")
+    src_uri_yang = d.getVar("SRC_URI_aether_yang")
 
-SRC_URI = "git://${SRC_URI_yuma_local};protocol=${PROTOCOL_yuma};branch=${BRANCH_yuma};name=yuma;destsuffix=yuma \
-           git://${SRC_URI_aether_local};protocol=${PROTOCOL_aether};branch=${BRANCH_aether};name=ather;destsuffix=aether"
+    if os.path.exists(src_uri_fwd_yuma):
+        bb.warn(f"❌ Cloning forwardplane from local")
+        d.setVar("PROTOCL_forwardplane", "file")
+    else:
+        d.setVar("SRC_URI_aether_fwd_yuma", "git@github.com:hacksmith007/forwardplane.git")
+        bb.warn(f"❌ Cloning forwardplane from remote")
+
+    if os.path.exists(src_uri_yang):
+        d.setVar("PROTOCL_yang", "file")
+    else:
+        d.setVar("SRC_URI_aether_yang", "git@github.com:hacksmith007/yang.git")
+        bb.warn(f"❌ Cloning yang from remote")
+}
+
+addtask prepare before do_patch after do_fetch
+
+BRANCH_yuma = "alpha_devR1.0"
+BRANCH_fwd = "devR1.0"
+BRANCH_yang = "devR1.0"
+
+
+SRC_URI = "git://${SRC_URI_yuma};protocol=${PROTOCOL_yuma};branch=${BRANCH_yuma};name=yuma;destsuffix=yuma \
+           git://${SRC_URI_aether_fwd_yuma};protocol=${PROTOCOL_yuma};branch=${BRANCH_fwd};name=forwardplane;destsuffix=forwardplane \
+           git://${SRC_URI_aether_yang};protocol=${PROTOCOL_aether};branch=${BRANCH_yang};name=ather;destsuffix=aether"
 
 SRC_URI += "file://netconfd.service \
             file://netconfd.conf \
             file://startup-cfg.xml "
 
 
-SRCREV_yuma = "bd693b71e685cdc8db24f96dbf61ef7d1d0ba723"
-SRCREV_ather = "4252a21ee4e83f2d4499e89a14f01f1d421a89aa"
+SRCREV_yuma = "7aab0e24e4e828a121314904f4a646c8ad6c7a1e"
 
 DEPENDS += "git autoconf automake pkgconfig gcc libtool libxml2 libssh2 zlib readline openssl openssh ncurses zlib"
 
 S_yuma = "${WORKDIR}/yuma"
-S_aether = "${WORKDIR}/aether"
+S_yang = "${WORKDIR}/aether"
+S_forwardplane = "${WORKDIR}/forwardplane"
 
 inherit autotools pkgconfig systemd
 
 do_configure:prepend () {
-    cp -r ${S_aether}/* ${S_yuma}/example-modules/aether-xcvr
+    cp -r ${S_yang}/* ${S_yuma}/example-modules/aether-xcvr
+    mkdir ${S_yuma}/example-modules/aether-networks
+    cp -r ${S_forwardplane}/yuma/aether-xcvr/* ${S_yuma}/example-modules/aether-xcvr
 }
 
 do_configure() {
