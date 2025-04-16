@@ -17,6 +17,7 @@ IMAGE_INSTALL += " openssh \
     shadow \
     docker-ce \
     yuma123 \ 
-    wifi-connect "
+    wifi-connect \
+    docker-runner "
 # Add additional packages
 SYSTEMD_SERVICE_${PN} += "docker.service"

@@ -1,0 +1,12 @@
+[Unit]
+Description=Load and run docker container
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=/usr/bin/docker load -i /opt/docker/docker-runner.tar
+ExecStart=/usr/bin/docker run --rm --name=yocto-d-run --network=host docker-runner:latest
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
